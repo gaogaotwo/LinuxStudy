@@ -1,0 +1,44 @@
+version: '2'
+services:
+  zabbix-mysql-service: 
+    image: daocloud.io/library/mysql:5.7
+    container_name: zabbix-mysql-service
+    environment:
+      - MYSQL_ROOT_PASSWORD=123456
+    restart: always
+  zabbix-server-service:
+    image: monitoringartist/zabbix-xxl:3.2.6
+    links: 
+      - zabbix-mysql-service:mysqlhost
+    container_name: zabbix-server-service
+    restart: always
+    depends_on:
+      - zabbix-mysql-service
+    ports:
+      - "8888:80"
+    environment:
+      - ZS_DBHost=mysqlhost
+      - ZS_DBUser=root
+      - ZS_DBPassword=123456
+  zabbix-agent-a:
+    image: zabbix/zabbix-agent:ubuntu-3.2.6
+    links: 
+      - zabbix-server-service:zabbixserverhost
+    container_name: zabbix-agent-a
+    restart: always
+    depends_on:
+      - zabbix-server-service
+    environment:
+      - ZBX_HOSTNAME=zabbix-agent-service-a
+      - ZBX_SERVER_HOST=zabbixserverhost
+  zabbix-agent-b:
+    image: zabbix/zabbix-agent:ubuntu-3.2.6
+    links: 
+      - zabbix-server-service:zabbixserverhost
+    container_name: zabbix-agent-b
+    restart: always
+    depends_on:
+      - zabbix-server-service
+    environment:
+      - ZBX_HOSTNAME=zabbix-agent-service-b
+      - ZBX_SERVER_HOST=zabbixserverhost

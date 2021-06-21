@@ -1,0 +1,22 @@
+FROM centos:7
+MAINTAINER gaogaotwo<>
+VOLUME ["/gaogaotwo/docker/ansible-demo/volume2"]
+# 安装docker内部centos环境 基本依赖的
+RUN yum install -y sudo
+RUN yum install -y openssh-server
+RUN yum install -y openssh-clients 
+#RUN yum install -y http://mirrors.sohu.com/fedora-epel/6/x86_64/epel-release-6-8.noarch.rpm
+RUN yum install -y https://releases.ansible.com/ansible/rpm/release/epel-7-x86_64/ansible-2.9.5-1.el7.ans.noarch.rpm
+RUN yum install -y vim
+RUN yum install -y net-tools 
+RUN yum install -y initscripts 
+
+RUN sed -i 's/UsePAM yes/UsePAM no/g' /etc/ssh/sshd_config
+# 修改root用户密码
+RUN echo "root:benny"|chpasswd
+RUN ssh-keygen -t dsa -f /etc/ssh/ssh_host_dsa_key
+RUN ssh-keygen -t rsa -f /etc/ssh/ssh_host_rsa_key
+# 启动sshd服务并且暴露22端口
+RUN mkdir /var/run/sshd
+EXPOSE 22
+ENTRYPOINT ["/usr/sbin/sshd","-D"]

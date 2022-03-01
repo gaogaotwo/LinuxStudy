@@ -1,0 +1,47 @@
+# web server
+nginx:
+  image: nginx:alpine
+  ports:
+    - "82:80"
+    # - "443:443"
+  volumes:
+    # app
+    - /root/Webapp/Compose/app:/usr/share/nginx/html/
+    # nginx configs
+    - /root/Webapp/Compose/dockerfiles-master/lnmp/conf.d:/etc/nginx/conf.d/:ro
+    # certificates
+    # - ./server.crt/:/etc/nginx/server.crt:ro
+    # - ./server.key/:/etc/nginx/server.key:ro
+  links:
+    - fpm:__DOCKER_PHP_FPM__
+
+# php-fpm
+fpm:
+  image: php:7.0-fpm
+  ports:
+    - "9000:9000"
+  volumes:
+  #目录地址映射 
+    - /root/Webapp/Compose/app:/usr/share/nginx/html/
+    # Your php.ini
+    - /root/Webapp/Compose/dockerfiles-master/lnmp/php/php.ini-production:/usr/local/etc/php/php.ini:ro
+  # environment:
+    # Set your APP env variables here:
+    # - APP_KEY=
+    # - DB_HOST=
+    # - DB_DATABASE=
+    # - DB_USERNAME=
+    # - DB_PASSWORD=
+  links:
+    - mysql:mysql
+
+# database
+mysql:
+  image: mysql:5.6
+  ports:
+    # Allow client to access 3306
+    - "3306:3306"
+  volumes:
+    - /root/Webapp/Compose/mysql:/var/lib/mysql
+  environment:
+    - MYSQL_ROOT_PASSWORD=xxx
